@@ -29,6 +29,7 @@
 #include "foldersel.h"
 #include "headerview.h"
 #include "messageview.h"
+#include "procheader.h"
 #include "sylicons.h"
 
 static SylPluginInfo info = {
@@ -251,13 +252,34 @@ static void exec_sylicons_menu_cb(void)
 
 }
 
+typedef struct _Mailer {
+    gchar *head;
+    gchar *image;
+} Mailer;
+
+static Mailer x_mailer[] = {
+    {"Microsoft Office Outlook", "ms_outlook12.png"},
+    {"Microsoft Outlook Express", "ms_outlook_express.png"},
+    {"Microsoft Outlook", "ms_outlook.png"},
+    {"Mew", "mew.png"},
+    {"Thunderbird", "thunderbird.png"},
+    {"Wanderlust", "wanderlust.png"},
+    {"Becky!", "becky.png"},
+    {"Sylpheed", "sylpheed.png"},
+    {"Claws Mail", "claws-mail.png"},
+    {"Mutt", "mutt.png"},
+    {"Shuriken", "shuriken_pro.png"},
+};
+
 static void messageview_show_cb(GObject *obj, gpointer msgview,
 				MsgInfo *msginfo, gboolean all_headers)
 {
+#if DEBUG
 	g_print("[DEBUG] test: %p: messageview_show (%p), all_headers: %d: %s\n",
             obj, msgview, all_headers,
             msginfo && msginfo->subject ? msginfo->subject : "");
-
+#endif
+    
 	if (msgview) {
 
         MessageView *messageview = (MessageView*)msgview;
@@ -278,32 +300,59 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
                         }
                     }
                     /* check X-Mailer or User-Agent */
-                    gchar *path = g_strconcat(get_rc_dir(),
+                    gchar *msg_path = procmsg_get_message_file_path(msginfo);
+                    
+#if DEBUG
+                    g_print("[DEBUG] msg_path:%s\n", msg_path);
+#endif
+                    GList* hl = procheader_get_header_list_from_file(msg_path);
+                    gchar *path = NULL;
+                    for (i=0; i<g_list_length(hl); i++){
+                        Header *header = g_list_nth_data(hl, i);
+                        if (header && header->name && header->body) {
+                            if (strcmp(header->name, "X-Mailer") == 0 ||
+                                strcmp(header->name, "User-Agent") == 0) {
+#if DEBUG
+                                g_print("name:%s body:%s\n", header->name, header->body);
+#endif
+                                guint mindex = 0;
+                                guint mmax = sizeof(x_mailer)/sizeof(Mailer);
+                                for (mindex = 0; mindex < mmax; mindex++){
+                                    if (header->body && x_mailer[mindex].head &&
+                                        g_strrstr(header->body, x_mailer[mindex].head)) {
+                                        path = g_strconcat(get_rc_dir(),
                                               G_DIR_SEPARATOR_S,
                                               "plugins",
                                               G_DIR_SEPARATOR_S,
                                               SYLICONS,
                                               G_DIR_SEPARATOR_S,
-                                              "sylpheed.png", NULL);
-                    g_print("[DEBUG] sylpheed.png path: %s\n", path);
+                                                           x_mailer[mindex].image, NULL);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
 #if 0
                     GtkImage *icon = gtk_image_new_from_file(path);
 #else
                     GError *gerr = NULL;
-                    if (g_file_test(path, G_FILE_TEST_IS_REGULAR | G_FILE_TEST_EXISTS)) {
+                    if (path && g_file_test(path, G_FILE_TEST_IS_REGULAR | G_FILE_TEST_EXISTS)) {
+#if DEBUG
+                        g_print("[DEBUG] sylpheed.png path: %s\n", path);
+#endif
+                        GdkPixbuf *pbuf = gdk_pixbuf_new_from_file(path, &gerr);
+                        if (gerr) {
+                            g_error(gerr->message);
+                            return;
+                        }
+                        GtkImage *icon = gtk_image_new_from_pixbuf(pbuf);
+                        gtk_box_pack_end(GTK_BOX(hbox), icon, FALSE, FALSE, 0);
+                        gtk_widget_show(icon);
                     } else {
                     }
-
-                    GdkPixbuf *pbuf = gdk_pixbuf_new_from_file(path, &gerr);
-                    if (gerr) {
-                        g_error(gerr->message);
-                        return;
-                    }
-                    GtkImage *icon = gtk_image_new_from_pixbuf(pbuf);
 #endif
-
-                    gtk_box_pack_end(GTK_BOX(hbox), icon, FALSE, FALSE, 0);
-                    gtk_widget_show(icon);
                 } else {
                     g_print("[DEBUG] hbox is NULL\n");
                 }
