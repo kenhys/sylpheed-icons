@@ -2,7 +2,8 @@
 NAME=sylicons
 TARGET=$NAME.dll
 OBJS="$NAME.o"
-OBJS="$NAME.o version.o"
+SRC="$NAME.c ui.c"
+OBJS="$NAME.o ui.o version.o"
 PKG=sylpheed-$NAME
 LIBSYLPH=./lib/libsylph-0-1.a
 LIBSYLPHEED=./lib/libsylpheed-plugin-0-1.a
@@ -36,13 +37,16 @@ function compile ()
     echo $com
     eval $com
 
-    com="gcc -Wall -c $DEF $INC $NAME.c"
-    echo $com
-    eval $com
-    if [ $? != 0 ]; then
-        echo "compile error"
-        exit
-    fi
+    for f in $SRC; do
+	com="gcc -Wall -c $DEF $INC $f"
+	echo $com
+	eval $com
+	if [ $? != 0 ]; then
+            echo "compile error"
+            exit
+	fi
+    done
+
     com="gcc -shared -o $TARGET $OBJS -L./lib $LIBSYLPH $LIBSYLPHEED $LIBS -lssleay32 -leay32 -lws2_32 -liconv"
     echo $com
     eval $com
