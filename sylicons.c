@@ -53,14 +53,12 @@ void plugin_load(void)
   gpointer mainwin;
 
   syl_init_gettext(SYLICONS, "lib/locale");
-  
   g_print("sylicons plug-in loaded!\n");
 
   syl_plugin_add_menuitem("/Tools", NULL, NULL, NULL);
   syl_plugin_add_menuitem("/Tools", _("SylIcons [sylicons]"), exec_sylicons_menu_cb, NULL);
 
   mainwin = syl_plugin_main_window_get();
-  g_print("mainwin: %p\n", mainwin);
   syl_plugin_main_window_popup(mainwin);
 
   g_signal_connect_after(syl_app_get(), "init-done", G_CALLBACK(init_done_cb),
@@ -71,14 +69,13 @@ void plugin_load(void)
 
   syl_plugin_signal_connect("messageview-show",
                             G_CALLBACK(messageview_show_cb), NULL);
-  
   g_print("sylicons plug-in loading done\n");
 
   GList* folder_list = folder_get_list();
   Folder *cur_folder;
   GList *cur;
   gint i;
-  
+
   for (i = 0, cur = folder_list; cur != NULL; cur = cur->next, i++) {
     cur_folder = FOLDER(cur->data);
     debug_print("[PLUGIN] folder[%d] name %s\n",i, cur_folder->name);
@@ -92,7 +89,7 @@ void plugin_load(void)
         break;
       }
     }
-  }    
+  }
 }
 
 void plugin_unload(void)
@@ -137,14 +134,13 @@ static void activate_menu_cb(GtkMenuItem *menuitem, gpointer data)
 
 static void prefs_ok_cb(GtkWidget *widget, gpointer data)
 {
-  
   GList* folder_list = folder_get_list();
-  
+
   Folder *cur_folder;
   GList *cur;
   gint i;
   Folder *mh_folder;
-  
+
   gint mhn = 0;
   for (i = 0, cur = folder_list; cur != NULL; cur = cur->next, i++) {
     cur_folder = FOLDER(cur->data);
@@ -237,7 +233,7 @@ static void exec_sylicons_menu_cb(void)
   gtk_widget_show(cancel_btn);
 
   gtk_widget_show(confirm_area);
-	
+
   gtk_box_pack_end(GTK_BOX(vbox), confirm_area, FALSE, FALSE, 0);
   gtk_widget_grab_default(ok_btn);
   gtk_widget_show(vbox);
@@ -279,7 +275,7 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
             obj, msgview, all_headers,
             msginfo && msginfo->subject ? msginfo->subject : "");
 #endif
-    
+
 	if (msgview) {
 
         MessageView *messageview = (MessageView*)msgview;
@@ -301,7 +297,7 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
                     }
                     /* check X-Mailer or User-Agent */
                     gchar *msg_path = procmsg_get_message_file_path(msginfo);
-                    
+
 #if DEBUG
                     g_print("[DEBUG] msg_path:%s\n", msg_path);
 #endif
@@ -356,9 +352,9 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
                 } else {
                     g_print("[DEBUG] hbox is NULL\n");
                 }
-            } else { 
+            } else {
                 g_print("[DEBUG] headerview is NULL\n");
-            }                
+            }
         } else {
             g_print("[DEBUG] messageview is NULL\n");
         }
