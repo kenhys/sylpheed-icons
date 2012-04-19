@@ -45,7 +45,6 @@ struct _SylIconsOption {
   gchar *folder_path;
 };
     
-static void folder_btn_clicked(GtkButton *button, gpointer data);
 static void messageview_show_cb(GObject *obj, gpointer msgview,
                                 MsgInfo *msginfo, gboolean all_headers);
 

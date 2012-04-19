@@ -39,7 +39,7 @@ static SylPluginInfo info = {
   N_(PLUGIN_DESC)
 };
 
-static SylIconsOption g_opt;
+SylIconsOption g_opt;
 
 static void init_done_cb(GObject *obj, gpointer data);
 static void app_exit_cb(GObject *obj, gpointer data);
@@ -126,12 +126,6 @@ static void app_exit_cb(GObject *obj, gpointer data)
   g_print("test: %p: app will exit\n", obj);
 }
 
-static void activate_menu_cb(GtkMenuItem *menuitem, gpointer data)
-{
-  g_print("menu activated\n");
-}
-
-
 static void prefs_ok_cb(GtkWidget *widget, gpointer data)
 {
   GList* folder_list = folder_get_list();
@@ -196,26 +190,15 @@ static void exec_sylicons_menu_cb(void)
   gtk_container_add(GTK_CONTAINER(window), vbox);
 
 
-  /* select folder and read random n mails test */
-  GtkWidget *folder_frm = gtk_frame_new(_("Mailbox directory"));
-  GtkWidget *folder_align = gtk_alignment_new(0, 0, 1, 1);
-  gtk_alignment_set_padding(GTK_ALIGNMENT(folder_align), 6, 6, 6, 6);
+  /* notebook */ 
+  GtkWidget *notebook = gtk_notebook_new();
+  /* main tab */
+  create_config_main_page(notebook, g_opt.rcfile);
+  /* about, copyright tab */
+  create_config_about_page(notebook, g_opt.rcfile);
 
-  GtkWidget *folder_btn = gtk_button_new_from_stock(GTK_STOCK_OPEN);
-  g_opt.folder_entry = gtk_entry_new();
-  GtkWidget *hbox = gtk_hbox_new(FALSE, 6);
-  gtk_box_pack_start(GTK_BOX(hbox), g_opt.folder_entry, TRUE, TRUE, 6);
-  gtk_box_pack_start(GTK_BOX(hbox), folder_btn, FALSE, FALSE, 6);
-  gtk_container_add(GTK_CONTAINER(folder_align), hbox);
-  gtk_container_add(GTK_CONTAINER(folder_frm), folder_align);
-
-  gtk_box_pack_start(GTK_BOX(vbox), folder_frm, FALSE, FALSE, 6);
-
-  gtk_entry_set_text(GTK_ENTRY(g_opt.folder_entry), g_opt.folder_path);
-
-  g_signal_connect(G_OBJECT(folder_btn), "clicked",
-                   G_CALLBACK(folder_btn_clicked), g_opt.folder_entry);
-
+  gtk_widget_show(notebook);
+  gtk_box_pack_start(GTK_BOX(vbox), notebook, TRUE, TRUE, 0);
 
   confirm_area = gtk_hbutton_box_new();
   gtk_button_box_set_layout(GTK_BUTTON_BOX(confirm_area), GTK_BUTTONBOX_END);
@@ -238,7 +221,7 @@ static void exec_sylicons_menu_cb(void)
   gtk_widget_grab_default(ok_btn);
   gtk_widget_show(vbox);
 
-  gtk_window_set_title(GTK_WINDOW(window), _("Mailbox is Here!"));
+  gtk_window_set_title(GTK_WINDOW(window), _("SylIcons"));
 
   g_signal_connect(G_OBJECT(ok_btn), "clicked",
                    G_CALLBACK(prefs_ok_cb), window);
@@ -363,17 +346,3 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
     }
 }
 
-static void folder_btn_clicked(GtkButton *button, gpointer data)
-{
-  GtkWidget *dialog = gtk_file_chooser_dialog_new(NULL, NULL, GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                                                  GTK_STOCK_OPEN,GTK_RESPONSE_ACCEPT,
-                                                  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                                  NULL);
-  if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT){
-    gchar *filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER(dialog));
-
-    GtkWidget *widget = data;
-    gtk_entry_set_text(GTK_ENTRY(widget), filename);
-    g_free (filename);
-  }
-}
