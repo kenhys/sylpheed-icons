@@ -34,7 +34,7 @@
 
 static SylPluginInfo info = {
   N_(PLUGIN_NAME),
-  "0.1.0",
+  "0.2.0",
   "HAYASHI Kentaro",
   N_(PLUGIN_DESC)
 };
@@ -248,101 +248,128 @@ static Mailer x_mailer[] = {
     {"Claws Mail", "claws-mail.png"},
     {"Mutt", "mutt.png"},
     {"Shuriken", "shuriken_pro.png"},
+    {"Eudora", "eudora.png"},
 };
 
 static void messageview_show_cb(GObject *obj, gpointer msgview,
 				MsgInfo *msginfo, gboolean all_headers)
 {
 #if DEBUG
-	g_print("[DEBUG] test: %p: messageview_show (%p), all_headers: %d: %s\n",
-            obj, msgview, all_headers,
-            msginfo && msginfo->subject ? msginfo->subject : "");
+  g_print("[DEBUG] test: %p: messageview_show (%p), all_headers: %d: %s\n",
+	  obj, msgview, all_headers,
+	  msginfo && msginfo->subject ? msginfo->subject : "");
 #endif
+  
+  if (!msgview) {
+    g_print("[DEBUG] msgview is NULL\n");
+    return;
+  }
 
-	if (msgview) {
+  MessageView *messageview = (MessageView*)msgview;
+  if (!messageview) {
+    g_print("[DEBUG] messageview is NULL\n");
+    return;
+  }
 
-        MessageView *messageview = (MessageView*)msgview;
-        if (messageview) {
-            HeaderView *headerview = messageview->headerview;
-            if (headerview) {
-                GtkWidget *hbox = headerview->hbox;
-                if (hbox) {
+  HeaderView *headerview = messageview->headerview;
+  if (!headerview) {
+    g_print("[DEBUG] headerview is NULL\n");
+    return;
+  }
 
+  GtkWidget *hbox = headerview->hbox;
+  if (!hbox) {
+    g_print("[DEBUG] hbox is NULL\n");
+    return;
+  }
 
-                    GList* wl = gtk_container_get_children(GTK_CONTAINER(hbox));
-                    guint i=0;
-                    for (i=0; i<g_list_length(wl); i++){
-                        gpointer gdata = g_list_nth_data(wl, i);
-                        if (GTK_IS_IMAGE(gdata)) {
-                            /* remove from hbox */
-                            gtk_container_remove(GTK_CONTAINER(hbox), GTK_IMAGE(gdata));
-                        }
-                    }
-                    /* check X-Mailer or User-Agent */
-                    gchar *msg_path = procmsg_get_message_file_path(msginfo);
+  GList* wl = gtk_container_get_children(GTK_CONTAINER(hbox));
+
+  gpointer gicon = NULL;
+  guint iconn = 0;
+  gint i=g_list_length(wl)-1;
+
+  /* search recently added GtkImage */
+  while (i >= 0) {
+    gpointer gdata = g_list_nth_data(wl, i);
+    if (GTK_IS_IMAGE(gdata) && gdata != headerview->image) {
+      /* remove from hbox */
+      g_print("[DEBUG] GTK_IS_IMAGE %p\n", gdata);
+#if DEBUG
+      g_print("[DEBUG] remove icon: %p\n", gicon);
+#endif
+      gtk_container_remove(GTK_CONTAINER(hbox), GTK_IMAGE(gdata));
+    }
+    i--;
+  }
+
+  /* check X-Mailer or User-Agent */
+  gchar *msg_path = procmsg_get_message_file_path(msginfo);
 
 #if DEBUG
-                    g_print("[DEBUG] msg_path:%s\n", msg_path);
+  g_print("[DEBUG] msg_path:%s\n", msg_path);
 #endif
-                    GList* hl = procheader_get_header_list_from_file(msg_path);
-                    gchar *path = NULL;
-                    for (i=0; i<g_list_length(hl); i++){
-                        Header *header = g_list_nth_data(hl, i);
-                        if (header && header->name && header->body) {
-                            if (strcmp(header->name, "X-Mailer") == 0 ||
-                                strcmp(header->name, "User-Agent") == 0) {
+  GList* hl = procheader_get_header_list_from_file(msg_path);
+  gchar *path = NULL;
+
+  gboolean gface = FALSE;
+  for (i=0; i<g_list_length(hl); i++){
+    Header *header = g_list_nth_data(hl, i);
+    if (header && header->name && header->body) {
+      if (strcmp(header->name, "X-Face") == 0) {
+	/* skip to display MUA icon */
+	gface = TRUE;
+	break;
+      } else if (strcmp(header->name, "X-Mailer") == 0 ||
+		 strcmp(header->name, "User-Agent") == 0) {
 #if DEBUG
-                                g_print("name:%s body:%s\n", header->name, header->body);
+	g_print("[DEBUG] name:%s body:%s\n", header->name, header->body);
 #endif
-                                guint mindex = 0;
-                                guint mmax = sizeof(x_mailer)/sizeof(Mailer);
-                                for (mindex = 0; mindex < mmax; mindex++){
-                                    if (header->body && x_mailer[mindex].head &&
-                                        g_strrstr(header->body, x_mailer[mindex].head)) {
-                                        path = g_strconcat(get_rc_dir(),
-                                              G_DIR_SEPARATOR_S,
-                                              "plugins",
-                                              G_DIR_SEPARATOR_S,
-                                              SYLICONS,
-                                              G_DIR_SEPARATOR_S,
-                                                           x_mailer[mindex].image, NULL);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
+	guint mindex = 0;
+	guint mmax = sizeof(x_mailer)/sizeof(Mailer);
+	for (mindex = 0; mindex < mmax; mindex++){
+	  if (header->body && x_mailer[mindex].head &&
+	      g_strrstr(header->body, x_mailer[mindex].head) != NULL) {
+	    path = g_strconcat(get_rc_dir(),
+			       G_DIR_SEPARATOR_S,
+			       "plugins",
+			       G_DIR_SEPARATOR_S,
+			       SYLICONS,
+			       G_DIR_SEPARATOR_S,
+			       x_mailer[mindex].image, NULL);
+	    break;
+	  }
+	}
+      }
+    }
+  }
 
 #if 0
-                    GtkImage *icon = gtk_image_new_from_file(path);
+  GtkImage *icon = gtk_image_new_from_file(path);
 #else
-                    GError *gerr = NULL;
-                    if (path && g_file_test(path, G_FILE_TEST_IS_REGULAR | G_FILE_TEST_EXISTS)) {
+  GError *gerr = NULL;
+  if (path && g_file_test(path, G_FILE_TEST_IS_REGULAR | G_FILE_TEST_EXISTS)) {
 #if DEBUG
-                        g_print("[DEBUG] sylpheed.png path: %s\n", path);
+    g_print("[DEBUG] MUA icon path: %s\n", path);
 #endif
-                        GdkPixbuf *pbuf = gdk_pixbuf_new_from_file(path, &gerr);
-                        if (gerr) {
-                            g_error(gerr->message);
-                            return;
-                        }
-                        GtkImage *icon = gtk_image_new_from_pixbuf(pbuf);
-                        gtk_box_pack_end(GTK_BOX(hbox), icon, FALSE, FALSE, 0);
-                        gtk_widget_show(icon);
-                    } else {
-                    }
-#endif
-                } else {
-                    g_print("[DEBUG] hbox is NULL\n");
-                }
-            } else {
-                g_print("[DEBUG] headerview is NULL\n");
-            }
-        } else {
-            g_print("[DEBUG] messageview is NULL\n");
-        }
-    } else {
-        g_print("[DEBUG] msgview is NULL\n");
+
+    GdkPixbuf *pbuf = gdk_pixbuf_new_from_file(path, &gerr);
+    if (gerr) {
+      g_error(gerr->message);
+      return;
     }
+    GtkImage *icon = gtk_image_new_from_pixbuf(pbuf);
+    gtk_box_pack_end(GTK_BOX(hbox), icon, FALSE, FALSE, 0);
+    gtk_widget_show(icon);
+#if DEBUG
+    g_print("[DEBUG] MUA new icon path: %p\n", icon);
+#endif
+
+  } else {
+#if DEBUG
+    g_print("[DEBUG] MUA icon path 404: %s\n", path ? path : "");
+#endif
+  }
+#endif
 }
 
