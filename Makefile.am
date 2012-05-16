@@ -2,7 +2,7 @@ libdir = $(plugindir)
 
 lib_LTLIBRARIES = sylicons.la
 
-sylicons_la_SOURCES = sylicons.c version.rc
+sylicons_la_SOURCES = src/sylicons.c src/sylicons.h src/ui.c 
 sylicons_la_LDFLAGS = -module -no-undefined -avoid-version
 
 INCLUDES = \
