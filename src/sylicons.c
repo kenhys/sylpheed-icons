@@ -92,7 +92,7 @@ void plugin_load(void)
 
 void plugin_unload(void)
 {
-  g_print("test plug-in unloaded!\n");
+  g_print("sylicons plug-in unloaded!\n");
 }
 
 SylPluginInfo *plugin_info(void)
@@ -108,12 +108,12 @@ gint plugin_interface_version(void)
 
 static void init_done_cb(GObject *obj, gpointer data)
 {
-  g_print("test: %p: app init done\n", obj);
+  g_print("sylicons: %p: app init done\n", obj);
 }
 
 static void app_exit_cb(GObject *obj, gpointer data)
 {
-  g_print("test: %p: app will exit\n", obj);
+  g_print("sylicons: %p: app will exit\n", obj);
 }
 
 static void prefs_ok_cb(GtkWidget *widget, gpointer data)
@@ -245,7 +245,7 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
 				MsgInfo *msginfo, gboolean all_headers)
 {
 #if DEBUG
-  g_print("[DEBUG] test: %p: messageview_show (%p), all_headers: %d: %s\n",
+  g_print("[DEBUG] sylicons: %p: messageview_show (%p), all_headers: %d: %s\n",
 	  obj, msgview, all_headers,
 	  msginfo && msginfo->subject ? msginfo->subject : "");
 #endif
