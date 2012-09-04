@@ -1,4 +1,8 @@
 private_build.h
 *.dll
 *.o
+*.la
+*.lo
+.libs
+.deps
 .compile
