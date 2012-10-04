@@ -3,6 +3,8 @@ private_build.h
 *.o
 *.la
 *.lo
+*.in
 .libs
 .deps
 .compile
+Makefile
