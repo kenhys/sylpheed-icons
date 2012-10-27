@@ -8,3 +8,8 @@ private_build.h
 .deps
 .compile
 Makefile
+configure
+autom4te*
+m4/lib*
+m4/lt*
+config/*
