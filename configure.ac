@@ -16,6 +16,7 @@ AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
+m4_include(../sylplugin_factory/m4/compiler_flag.m4)
 m4_include(../sylplugin_factory/m4/sylplugin_factory.m4)
 
 # Checks for libraries.
