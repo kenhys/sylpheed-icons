@@ -22,9 +22,6 @@
 
 #define SYLICONS "sylicons"
 #define SYLICONSRC "syliconsrc"
-#define _(String)   dgettext(SYLICONS, String)
-#define N_(String)  gettext_noop(String)
-#define gettext_noop(String) (String)
 
 #define PLUGIN_NAME N_("SylIcons Plug-in")
 #define PLUGIN_DESC N_("Show Mail user agent icon by X-Mail header")
