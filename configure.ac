@@ -22,10 +22,15 @@ m4_include(lib/sylplugin_factory/m4/sylplugin_factory.m4)
 # Checks for libraries.
 AM_PATH_GLIB_2_0(2.8.0,, AC_MSG_ERROR(Test for GLib failed. See the 'INSTALL' for help.))
 AM_PATH_GTK_2_0(2.8.0,, AC_MSG_ERROR(Test for Gtk failed. See the 'INSTALL' for help.))
-GETTEXT_PACKAGE=sylnotify
+
+GETTEXT_PACKAGE=sylicons
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [Define text domain.])
+ALL_LINGUAS="ja"
 AM_GLIB_GNU_GETTEXT
+
+syliconslocaledir='${prefix}/${DATADIRNAME}/locale'
+AC_SUBST(syliconslocaledir)
 
 AC_SUBST(GTK_CFLAGS)
 AC_SUBST(GTK_LIBS)
