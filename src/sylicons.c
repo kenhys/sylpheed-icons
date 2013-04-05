@@ -32,6 +32,9 @@
 #include "procheader.h"
 #include "sylicons.h"
 
+#define PLUGIN_NAME N_("SylIcons Plug-in")
+#define PLUGIN_DESC N_("Show Mail user agent icon by X-Mail header")
+
 static SylPluginInfo info = {
   N_(PLUGIN_NAME),
   "0.2.0",
