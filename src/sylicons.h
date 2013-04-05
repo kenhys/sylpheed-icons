@@ -23,9 +23,6 @@
 #define SYLICONS "sylicons"
 #define SYLICONSRC "syliconsrc"
 
-#define PLUGIN_NAME N_("SylIcons Plug-in")
-#define PLUGIN_DESC N_("Show Mail user agent icon by X-Mail header")
-
 #define GET_RC_BOOLEAN(keyarg) g_key_file_get_boolean(g_opt.rcfile, SYLICONS, keyarg, NULL)
 
 typedef struct _SylIconsOption SylIconsOption;
