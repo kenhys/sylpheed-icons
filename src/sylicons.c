@@ -30,6 +30,7 @@
 #include "headerview.h"
 #include "messageview.h"
 #include "procheader.h"
+#include "sylplugin_factory.h"
 #include "sylicons.h"
 
 #define PLUGIN_NAME N_("SylIcons Plug-in")
