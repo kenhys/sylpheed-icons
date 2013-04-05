@@ -8,7 +8,8 @@ INCLUDES = \
 	-I$(includedir) \
 	-I$(sylpheed_build_dir) \
 	-I$(sylpheed_build_dir)/libsylph \
-	-I$(sylpheed_build_dir)/src
+	-I$(sylpheed_build_dir)/src \
+	-I$(sylplugin_factory_source_dir)/src
 
 sylicons_la_LIBADD = \
 	$(GTK_LIBS) \
