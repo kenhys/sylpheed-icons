@@ -86,10 +86,12 @@ void plugin_load(void)
     debug_print("[PLUGIN] folder[%d] name %s\n",i, cur_folder->name);
     if (FOLDER_TYPE(cur_folder) == F_MH) {
       if (cur_folder->data!=NULL){
-        debug_print("[PLUGIN] folder[%d] data %s\n",i, cur_folder->data);
+        SYLPF_DEBUG_VAL("folder index", i);
+        SYLPF_DEBUG_STR("folder data", (gchar *)cur_folder->data);
       }
       if (LOCAL_FOLDER(cur_folder)->rootpath!=NULL){
-        debug_print("[PLUGIN] folder[%d] rootpath %s\n",i, LOCAL_FOLDER(cur_folder)->rootpath);
+        SYLPF_DEBUG_VAL("folder index", i);
+        SYLPF_DEBUG_STR("folder rootpath", LOCAL_FOLDER(cur_folder)->rootpath);
         g_opt.folder_path = g_strdup(LOCAL_FOLDER(cur_folder)->rootpath);
         break;
       }
@@ -138,10 +140,12 @@ static void prefs_ok_cb(GtkWidget *widget, gpointer data)
     debug_print("[PLUGIN] folder[%d] name %s\n",i, cur_folder->name);
     if (FOLDER_TYPE(cur_folder) == F_MH) {
       if (cur_folder->data!=NULL){
-        debug_print("[PLUGIN] folder[%d] data %s\n",i, cur_folder->data);
+        SYLPF_DEBUG_VAL("folder index", i);
+        SYLPF_DEBUG_STR("folder data", (gchar *)cur_folder->data);
       }
       if (LOCAL_FOLDER(cur_folder)->rootpath!=NULL){
-        debug_print("[PLUGIN] folder[%d] rootpath %s\n",i, LOCAL_FOLDER(cur_folder)->rootpath);
+        SYLPF_DEBUG_VAL("folder index", i);
+        SYLPF_DEBUG_STR("folder rootpath", LOCAL_FOLDER(cur_folder)->rootpath);
         if (mhn == 0) {
           mh_folder = cur_folder;
         }
