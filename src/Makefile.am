@@ -1,6 +1,6 @@
 lib_LTLIBRARIES = sylicons.la
 
-sylicons_la_SOURCES = sylicons.c sylicons.h ui.c
+sylicons_la_SOURCES = sylicons.c sylicons.h
 sylicons_la_LDFLAGS = -module -no-undefined -avoid-version
 
 INCLUDES = \
