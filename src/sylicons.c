@@ -58,6 +58,10 @@ gulong app_exit_handler_id = 0;
 void plugin_load(void)
 {
   gpointer mainwin;
+  GList* folder_list = folder_get_list();
+  Folder *cur_folder;
+  GList *cur;
+  gint i;
 
   syl_init_gettext(SYLICONS, "lib/locale");
   g_print("sylicons plug-in loaded!\n");
@@ -76,10 +80,6 @@ void plugin_load(void)
                             G_CALLBACK(messageview_show_cb), NULL);
   g_print("sylicons plug-in loading done\n");
 
-  GList* folder_list = folder_get_list();
-  Folder *cur_folder;
-  GList *cur;
-  gint i;
 
   for (i = 0, cur = folder_list; cur != NULL; cur = cur->next, i++) {
     cur_folder = FOLDER(cur->data);
@@ -173,6 +173,7 @@ static void exec_sylicons_menu_cb(void)
   GtkWidget *confirm_area;
   GtkWidget *ok_btn;
   GtkWidget *cancel_btn;
+  GtkWidget *notebook;
 
   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_container_set_border_width(GTK_CONTAINER(window), 8);
@@ -188,7 +189,7 @@ static void exec_sylicons_menu_cb(void)
 
 
   /* notebook */ 
-  GtkWidget *notebook = gtk_notebook_new();
+  notebook = gtk_notebook_new();
   /* main tab */
   create_config_main_page(notebook, g_opt.rcfile);
   /* about, copyright tab */
@@ -251,6 +252,25 @@ static Mailer x_mailer[] = {
 static void messageview_show_cb(GObject *obj, gpointer msgview,
 				MsgInfo *msginfo, gboolean all_headers)
 {
+  MessageView *messageview;
+  HeaderView *headerview;
+  GtkWidget *hbox;
+  GList* wl;
+  gpointer gicon = NULL;
+  guint iconn = 0;
+  gint i;
+  gpointer gdata;
+  gchar *msg_path;
+  GList* hl;
+  gchar *path = NULL;
+  gboolean gface;
+  Header *header;
+  guint mindex;
+  guint mmax;
+  GError *gerr = NULL;
+  GdkPixbuf *pbuf;
+  GtkImage *icon;
+
 #if DEBUG
   g_print("[DEBUG] sylicons: %p: messageview_show (%p), all_headers: %d: %s\n",
 	  obj, msgview, all_headers,
@@ -262,33 +282,31 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
     return;
   }
 
-  MessageView *messageview = (MessageView*)msgview;
+  messageview = (MessageView*)msgview;
   if (!messageview) {
     g_print("[DEBUG] messageview is NULL\n");
     return;
   }
 
-  HeaderView *headerview = messageview->headerview;
+  headerview = messageview->headerview;
   if (!headerview) {
     g_print("[DEBUG] headerview is NULL\n");
     return;
   }
 
-  GtkWidget *hbox = headerview->hbox;
+  hbox = headerview->hbox;
   if (!hbox) {
     g_print("[DEBUG] hbox is NULL\n");
     return;
   }
 
-  GList* wl = gtk_container_get_children(GTK_CONTAINER(hbox));
+  wl = gtk_container_get_children(GTK_CONTAINER(hbox));
 
-  gpointer gicon = NULL;
-  guint iconn = 0;
-  gint i=g_list_length(wl)-1;
+  i = g_list_length(wl)-1;
 
   /* search recently added GtkImage */
   while (i >= 0) {
-    gpointer gdata = g_list_nth_data(wl, i);
+    gdata = g_list_nth_data(wl, i);
     if (GTK_IS_IMAGE(gdata) && gdata != headerview->image) {
       /* remove from hbox */
       g_print("[DEBUG] GTK_IS_IMAGE %p\n", gdata);
@@ -301,17 +319,17 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
   }
 
   /* check X-Mailer or User-Agent */
-  gchar *msg_path = procmsg_get_message_file_path(msginfo);
+  
+  msg_path = procmsg_get_message_file_path(msginfo);
 
 #if DEBUG
   g_print("[DEBUG] msg_path:%s\n", msg_path);
 #endif
-  GList* hl = procheader_get_header_list_from_file(msg_path);
-  gchar *path = NULL;
+  hl = procheader_get_header_list_from_file(msg_path);
 
-  gboolean gface = FALSE;
+  gface = FALSE;
   for (i=0; i<g_list_length(hl); i++){
-    Header *header = g_list_nth_data(hl, i);
+    header = g_list_nth_data(hl, i);
     if (header && header->name && header->body) {
       if (strcmp(header->name, "X-Face") == 0) {
 	/* skip to display MUA icon */
@@ -322,8 +340,8 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
 #if DEBUG
 	g_print("[DEBUG] name:%s body:%s\n", header->name, header->body);
 #endif
-	guint mindex = 0;
-	guint mmax = sizeof(x_mailer)/sizeof(Mailer);
+        mindex = 0;
+        mmax = sizeof(x_mailer)/sizeof(Mailer);
 	for (mindex = 0; mindex < mmax; mindex++){
 	  if (header->body && x_mailer[mindex].head &&
 	      g_strrstr(header->body, x_mailer[mindex].head) != NULL) {
@@ -344,18 +362,17 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
 #if 0
   GtkImage *icon = gtk_image_new_from_file(path);
 #else
-  GError *gerr = NULL;
   if (path && g_file_test(path, G_FILE_TEST_IS_REGULAR | G_FILE_TEST_EXISTS)) {
 #if DEBUG
     g_print("[DEBUG] MUA icon path: %s\n", path);
 #endif
 
-    GdkPixbuf *pbuf = gdk_pixbuf_new_from_file(path, &gerr);
+    pbuf = gdk_pixbuf_new_from_file(path, &gerr);
     if (gerr) {
       g_error(gerr->message);
       return;
     }
-    GtkImage *icon = gtk_image_new_from_pixbuf(pbuf);
+    icon = gtk_image_new_from_pixbuf(pbuf);
     gtk_box_pack_end(GTK_BOX(hbox), icon, FALSE, FALSE, 0);
     gtk_widget_show(icon);
 #if DEBUG
