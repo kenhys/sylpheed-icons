@@ -260,8 +260,6 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
   HeaderView *headerview;
   GtkWidget *hbox;
   GList* wl;
-  gpointer gicon = NULL;
-  guint iconn = 0;
   gint i;
   gpointer gdata;
   gchar *msg_path;
