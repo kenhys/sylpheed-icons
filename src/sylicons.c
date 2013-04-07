@@ -263,7 +263,7 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
   gint i;
   gpointer gdata;
   gchar *msg_path;
-  GList* hl;
+  GSList* hl;
   gchar *path = NULL;
   gboolean gface;
   Header *header;
@@ -330,8 +330,8 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
   hl = procheader_get_header_list_from_file(msg_path);
 
   gface = FALSE;
-  for (i=0; i<g_list_length(hl); i++){
-    header = g_list_nth_data(hl, i);
+  for (i=0; i<g_slist_length(hl); i++){
+    header = g_slist_nth_data(hl, i);
     if (header && header->name && header->body) {
       if (strcmp(header->name, "X-Face") == 0) {
 	/* skip to display MUA icon */
