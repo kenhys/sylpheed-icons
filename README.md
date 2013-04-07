@@ -29,9 +29,19 @@ You can download DispMUA from here.
 
 http://www.juergen-ernst.de/addons/dispmua.html
 
+Here is the procedure to setup icons if you use DispMUA.
+
+```
+unzip dispmua-1.6.9.xpi
+cd chrome
+unzip chrome.jar
+cd content
+cp -r 48x48 $HOME/.sylpheed-2.0/plugins/sylicons
+```
 
 How to use
 ----------
 
-
+Just show emails.
+If Sylicons supports X-Mailer header, proper user agent icons are shown.
 
