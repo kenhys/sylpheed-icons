@@ -271,7 +271,7 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
   guint mmax;
   GError *gerr = NULL;
   GdkPixbuf *pbuf;
-  GtkImage *icon;
+  GtkWidget *icon;
 
 #if DEBUG
   g_print("[DEBUG] sylicons: %p: messageview_show (%p), all_headers: %d: %s\n",
@@ -315,7 +315,7 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
 #if DEBUG
       g_print("[DEBUG] remove icon: %p\n", gicon);
 #endif
-      gtk_container_remove(GTK_CONTAINER(hbox), GTK_IMAGE(gdata));
+      gtk_container_remove(GTK_CONTAINER(hbox), GTK_WIDGET(gdata));
     }
     i--;
   }
