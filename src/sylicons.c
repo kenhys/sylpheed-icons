@@ -371,7 +371,7 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
 
     pbuf = gdk_pixbuf_new_from_file(path, &gerr);
     if (gerr) {
-      g_error(gerr->message);
+      g_error("%s", gerr->message);
       return;
     }
     icon = gtk_image_new_from_pixbuf(pbuf);
