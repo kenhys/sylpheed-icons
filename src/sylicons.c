@@ -1,20 +1,7 @@
 /*
  * SylIcons -- 
- * Copyright (C) 2012 HAYASHI Kentaro
+ * Copyright (C) 2012-2013 HAYASHI Kentaro
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
 #include "config.h"
@@ -35,6 +22,7 @@
 #include "procheader.h"
 #include "sylplugin_factory.h"
 #include "sylicons.h"
+#include "copying.h"
 
 #define PLUGIN_NAME N_("SylIcons Plug-in")
 #define PLUGIN_DESC N_("Show Mail user agent icon by X-Mail header")
@@ -389,11 +377,6 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
 #endif
 }
 
-static gchar* g_copyright = N_("SylIcons is distributed under GPL license.\n"
-"\n"
-"Copyright (C) 2012 HAYASHI Kentaro <kenhys@gmail.com>"
-			       "\n");
-
 static GtkWidget *create_config_main_page(GtkWidget *notebook, GKeyFile *pkey)
 {
   GtkWidget *vbox;
@@ -443,7 +426,7 @@ static GtkWidget *create_config_about_page(GtkWidget *notebook, GKeyFile *pkey)
   scrolled = gtk_scrolled_window_new(NULL, NULL);
 
   tbuffer = gtk_text_buffer_new(NULL);
-  gtk_text_buffer_set_text(tbuffer, _(g_copyright), strlen(g_copyright));
+  gtk_text_buffer_set_text(tbuffer, _(copyright), strlen(copyright));
   tview = gtk_text_view_new_with_buffer(tbuffer);
   gtk_text_view_set_editable(GTK_TEXT_VIEW(tview), FALSE);
   gtk_container_add(GTK_CONTAINER(scrolled), tview);
