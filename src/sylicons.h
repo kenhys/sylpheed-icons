@@ -42,4 +42,7 @@ struct _SylIconsOption {
 static void messageview_show_cb(GObject *obj, gpointer msgview,
                                 MsgInfo *msginfo, gboolean all_headers);
 
+static GtkWidget *create_config_main_page(GtkWidget *notebook, GKeyFile *pkey);
+static GtkWidget *create_config_about_page(GtkWidget *notebook, GKeyFile *pkey);
+
 #endif /* __SYLICONS_H__ */
