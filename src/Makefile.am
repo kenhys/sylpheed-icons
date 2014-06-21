@@ -3,7 +3,7 @@ lib_LTLIBRARIES = sylicons.la
 sylicons_la_SOURCES = sylicons.c sylicons.h
 sylicons_la_LDFLAGS = -module -no-undefined -avoid-version
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	$(GTK_CFLAGS) \
 	-I$(includedir) \
 	-I$(sylpheed_build_dir) \
