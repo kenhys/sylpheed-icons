@@ -1,14 +1,15 @@
 lib_LTLIBRARIES = sylicons.la
 
-sylicons_la_SOURCES = sylicons.c sylicons.h ui.c
+sylicons_la_SOURCES = sylicons.c sylicons.h
 sylicons_la_LDFLAGS = -module -no-undefined -avoid-version
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	$(GTK_CFLAGS) \
 	-I$(includedir) \
 	-I$(sylpheed_build_dir) \
 	-I$(sylpheed_build_dir)/libsylph \
-	-I$(sylpheed_build_dir)/src
+	-I$(sylpheed_build_dir)/src \
+	-I$(sylplugin_factory_source_dir)/src
 
 sylicons_la_LIBADD = \
 	$(GTK_LIBS) \

@@ -1,23 +1,13 @@
 /*
  * SylIcons -- 
- * Copyright (C) 2012 HAYASHI Kentaro
+ * Copyright (C) 2012-2013 HAYASHI Kentaro
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include "config.h"
+
 #include <glib.h>
+#include <glib/gi18n-lib.h>
 #include <gtk/gtk.h>
 
 #include "sylmain.h"
@@ -30,11 +20,16 @@
 #include "headerview.h"
 #include "messageview.h"
 #include "procheader.h"
+#include "sylplugin_factory.h"
 #include "sylicons.h"
+#include "copying.h"
+
+#define PLUGIN_NAME N_("SylIcons Plug-in")
+#define PLUGIN_DESC N_("Show Mail user agent icon by X-Mail header")
 
 static SylPluginInfo info = {
   N_(PLUGIN_NAME),
-  "0.2.0",
+  VERSION,
   "HAYASHI Kentaro",
   N_(PLUGIN_DESC)
 };
@@ -51,6 +46,10 @@ gulong app_exit_handler_id = 0;
 void plugin_load(void)
 {
   gpointer mainwin;
+  GList* folder_list = folder_get_list();
+  Folder *cur_folder;
+  GList *cur;
+  gint i;
 
   syl_init_gettext(SYLICONS, "lib/locale");
   g_print("sylicons plug-in loaded!\n");
@@ -69,20 +68,18 @@ void plugin_load(void)
                             G_CALLBACK(messageview_show_cb), NULL);
   g_print("sylicons plug-in loading done\n");
 
-  GList* folder_list = folder_get_list();
-  Folder *cur_folder;
-  GList *cur;
-  gint i;
 
   for (i = 0, cur = folder_list; cur != NULL; cur = cur->next, i++) {
     cur_folder = FOLDER(cur->data);
     debug_print("[PLUGIN] folder[%d] name %s\n",i, cur_folder->name);
     if (FOLDER_TYPE(cur_folder) == F_MH) {
       if (cur_folder->data!=NULL){
-        debug_print("[PLUGIN] folder[%d] data %s\n",i, cur_folder->data);
+        SYLPF_DEBUG_VAL("folder index", i);
+        SYLPF_DEBUG_STR("folder data", (gchar *)cur_folder->data);
       }
       if (LOCAL_FOLDER(cur_folder)->rootpath!=NULL){
-        debug_print("[PLUGIN] folder[%d] rootpath %s\n",i, LOCAL_FOLDER(cur_folder)->rootpath);
+        SYLPF_DEBUG_VAL("folder index", i);
+        SYLPF_DEBUG_STR("folder rootpath", LOCAL_FOLDER(cur_folder)->rootpath);
         g_opt.folder_path = g_strdup(LOCAL_FOLDER(cur_folder)->rootpath);
         break;
       }
@@ -131,10 +128,12 @@ static void prefs_ok_cb(GtkWidget *widget, gpointer data)
     debug_print("[PLUGIN] folder[%d] name %s\n",i, cur_folder->name);
     if (FOLDER_TYPE(cur_folder) == F_MH) {
       if (cur_folder->data!=NULL){
-        debug_print("[PLUGIN] folder[%d] data %s\n",i, cur_folder->data);
+        SYLPF_DEBUG_VAL("folder index", i);
+        SYLPF_DEBUG_STR("folder data", (gchar *)cur_folder->data);
       }
       if (LOCAL_FOLDER(cur_folder)->rootpath!=NULL){
-        debug_print("[PLUGIN] folder[%d] rootpath %s\n",i, LOCAL_FOLDER(cur_folder)->rootpath);
+        SYLPF_DEBUG_VAL("folder index", i);
+        SYLPF_DEBUG_STR("folder rootpath", LOCAL_FOLDER(cur_folder)->rootpath);
         if (mhn == 0) {
           mh_folder = cur_folder;
         }
@@ -166,6 +165,7 @@ static void exec_sylicons_menu_cb(void)
   GtkWidget *confirm_area;
   GtkWidget *ok_btn;
   GtkWidget *cancel_btn;
+  GtkWidget *notebook;
 
   window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_container_set_border_width(GTK_CONTAINER(window), 8);
@@ -181,7 +181,7 @@ static void exec_sylicons_menu_cb(void)
 
 
   /* notebook */ 
-  GtkWidget *notebook = gtk_notebook_new();
+  notebook = gtk_notebook_new();
   /* main tab */
   create_config_main_page(notebook, g_opt.rcfile);
   /* about, copyright tab */
@@ -244,6 +244,23 @@ static Mailer x_mailer[] = {
 static void messageview_show_cb(GObject *obj, gpointer msgview,
 				MsgInfo *msginfo, gboolean all_headers)
 {
+  MessageView *messageview;
+  HeaderView *headerview;
+  GtkWidget *hbox;
+  GList* wl;
+  gint i;
+  gpointer gdata;
+  gchar *msg_path;
+  GSList* hl;
+  gchar *path = NULL;
+  gboolean gface;
+  Header *header;
+  guint mindex;
+  guint mmax;
+  GError *gerr = NULL;
+  GdkPixbuf *pbuf;
+  GtkWidget *icon;
+
 #if DEBUG
   g_print("[DEBUG] sylicons: %p: messageview_show (%p), all_headers: %d: %s\n",
 	  obj, msgview, all_headers,
@@ -255,56 +272,54 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
     return;
   }
 
-  MessageView *messageview = (MessageView*)msgview;
+  messageview = (MessageView*)msgview;
   if (!messageview) {
     g_print("[DEBUG] messageview is NULL\n");
     return;
   }
 
-  HeaderView *headerview = messageview->headerview;
+  headerview = messageview->headerview;
   if (!headerview) {
     g_print("[DEBUG] headerview is NULL\n");
     return;
   }
 
-  GtkWidget *hbox = headerview->hbox;
+  hbox = headerview->hbox;
   if (!hbox) {
     g_print("[DEBUG] hbox is NULL\n");
     return;
   }
 
-  GList* wl = gtk_container_get_children(GTK_CONTAINER(hbox));
+  wl = gtk_container_get_children(GTK_CONTAINER(hbox));
 
-  gpointer gicon = NULL;
-  guint iconn = 0;
-  gint i=g_list_length(wl)-1;
+  i = g_list_length(wl)-1;
 
   /* search recently added GtkImage */
   while (i >= 0) {
-    gpointer gdata = g_list_nth_data(wl, i);
+    gdata = g_list_nth_data(wl, i);
     if (GTK_IS_IMAGE(gdata) && gdata != headerview->image) {
       /* remove from hbox */
       g_print("[DEBUG] GTK_IS_IMAGE %p\n", gdata);
 #if DEBUG
       g_print("[DEBUG] remove icon: %p\n", gicon);
 #endif
-      gtk_container_remove(GTK_CONTAINER(hbox), GTK_IMAGE(gdata));
+      gtk_container_remove(GTK_CONTAINER(hbox), GTK_WIDGET(gdata));
     }
     i--;
   }
 
   /* check X-Mailer or User-Agent */
-  gchar *msg_path = procmsg_get_message_file_path(msginfo);
+  
+  msg_path = procmsg_get_message_file_path(msginfo);
 
 #if DEBUG
   g_print("[DEBUG] msg_path:%s\n", msg_path);
 #endif
-  GList* hl = procheader_get_header_list_from_file(msg_path);
-  gchar *path = NULL;
+  hl = procheader_get_header_list_from_file(msg_path);
 
-  gboolean gface = FALSE;
-  for (i=0; i<g_list_length(hl); i++){
-    Header *header = g_list_nth_data(hl, i);
+  gface = FALSE;
+  for (i=0; i<g_slist_length(hl); i++){
+    header = g_slist_nth_data(hl, i);
     if (header && header->name && header->body) {
       if (strcmp(header->name, "X-Face") == 0) {
 	/* skip to display MUA icon */
@@ -315,8 +330,8 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
 #if DEBUG
 	g_print("[DEBUG] name:%s body:%s\n", header->name, header->body);
 #endif
-	guint mindex = 0;
-	guint mmax = sizeof(x_mailer)/sizeof(Mailer);
+        mindex = 0;
+        mmax = sizeof(x_mailer)/sizeof(Mailer);
 	for (mindex = 0; mindex < mmax; mindex++){
 	  if (header->body && x_mailer[mindex].head &&
 	      g_strrstr(header->body, x_mailer[mindex].head) != NULL) {
@@ -337,18 +352,17 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
 #if 0
   GtkImage *icon = gtk_image_new_from_file(path);
 #else
-  GError *gerr = NULL;
   if (path && g_file_test(path, G_FILE_TEST_IS_REGULAR | G_FILE_TEST_EXISTS)) {
 #if DEBUG
     g_print("[DEBUG] MUA icon path: %s\n", path);
 #endif
 
-    GdkPixbuf *pbuf = gdk_pixbuf_new_from_file(path, &gerr);
+    pbuf = gdk_pixbuf_new_from_file(path, &gerr);
     if (gerr) {
-      g_error(gerr->message);
+      g_error("%s", gerr->message);
       return;
     }
-    GtkImage *icon = gtk_image_new_from_pixbuf(pbuf);
+    icon = gtk_image_new_from_pixbuf(pbuf);
     gtk_box_pack_end(GTK_BOX(hbox), icon, FALSE, FALSE, 0);
     gtk_widget_show(icon);
 #if DEBUG
@@ -363,3 +377,64 @@ static void messageview_show_cb(GObject *obj, gpointer msgview,
 #endif
 }
 
+static GtkWidget *create_config_main_page(GtkWidget *notebook, GKeyFile *pkey)
+{
+  GtkWidget *vbox;
+  GtkWidget *label;
+
+  debug_print("create_config_main_page\n");
+  if (notebook == NULL){
+    return NULL;
+  }
+  /* startup */
+  if (pkey!=NULL){
+  }
+  vbox = gtk_vbox_new(FALSE, 6);
+
+  label = gtk_label_new(_("General"));
+  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), vbox, label);
+  gtk_widget_show_all(notebook);
+
+  return vbox;
+}
+
+/* about, copyright tab */
+static GtkWidget *create_config_about_page(GtkWidget *notebook, GKeyFile *pkey)
+{
+  GtkWidget *hbox, *vbox;
+  GtkWidget *misc;
+  GtkWidget *scrolled;
+  GtkWidget *label;
+  GtkTextBuffer *tbuffer;
+  GtkWidget *tview;
+  
+  debug_print("create_config_about_page\n");
+  if (notebook == NULL){
+    return NULL;
+  }
+  hbox = gtk_hbox_new(TRUE, 6);
+  vbox = gtk_vbox_new(FALSE, 6);
+  gtk_box_pack_start(GTK_BOX(hbox), vbox, TRUE, TRUE, 6);
+
+  misc = gtk_label_new("SylIcons");
+  gtk_box_pack_start(GTK_BOX(vbox), misc, FALSE, TRUE, 6);
+
+  misc = gtk_label_new(PLUGIN_DESC);
+  gtk_box_pack_start(GTK_BOX(vbox), misc, FALSE, TRUE, 6);
+
+  /* copyright */
+  scrolled = gtk_scrolled_window_new(NULL, NULL);
+
+  tbuffer = gtk_text_buffer_new(NULL);
+  gtk_text_buffer_set_text(tbuffer, _(copyright), strlen(copyright));
+  tview = gtk_text_view_new_with_buffer(tbuffer);
+  gtk_text_view_set_editable(GTK_TEXT_VIEW(tview), FALSE);
+  gtk_container_add(GTK_CONTAINER(scrolled), tview);
+
+  gtk_box_pack_start(GTK_BOX(vbox), scrolled, TRUE, TRUE, 6);
+
+  label = gtk_label_new(_("About"));
+  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), hbox, label);
+  gtk_widget_show_all(notebook);
+  return NULL;
+}

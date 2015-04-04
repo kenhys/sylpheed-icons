@@ -1,5 +1,12 @@
 News of sylicons
 
+* 0.2.0 (2013-04-07)
+
+  * changed license to 2-Clause BSD
+  * supported Travis-CI
+  * fixed the bug which causes SEGV
+  * improved autotools support
+
 * 0.1.0 (2012-01-31)
 
   * initial release
