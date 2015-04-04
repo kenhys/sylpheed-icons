@@ -19,8 +19,7 @@ AC_PROG_CC
 AC_PROG_MAKE_SET
 AC_PROG_LIBTOOL
 
-m4_include(lib/sylplugin_factory/m4/compiler_flag.m4)
-m4_include(lib/sylplugin_factory/m4/sylplugin_factory.m4)
+m4_include(macros/sylplugin_factory.m4)
 
 # Checks for libraries.
 AM_PATH_GLIB_2_0(2.8.0,, AC_MSG_ERROR(Test for GLib failed. See the 'INSTALL' for help.))
