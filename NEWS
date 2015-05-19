@@ -1,5 +1,9 @@
 News of sylicons
 
+* 0.3.0 (2015-XX-XX)
+  * cleaned up some code.
+  * supported to match more icons. [GitHub#1] [Patch by Charles Lehner]
+
 * 0.2.0 (2013-04-07)
 
   * changed license to 2-Clause BSD
