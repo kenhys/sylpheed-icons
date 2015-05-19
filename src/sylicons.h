@@ -1,6 +1,6 @@
 /*
  * SylIcons -- 
- * Copyright (C) 2012-2013 HAYASHI Kentaro
+ * Copyright (C) 2012-2015 HAYASHI Kentaro
  */
 
 #ifndef __SYLICONS_H__
